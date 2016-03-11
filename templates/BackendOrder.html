@@ -1,0 +1,61 @@
+<li class="logsis-block">
+    <style>
+        .icon16.logsis{
+            background: url({$wa_app_static_url}plugins/logsis/img/logsis.png); 
+        }
+    </style>
+    {if empty($order.logsis_is_send)}
+        <a class="logsis-open-dialog" href="?plugin=logsis&action=dialog&order_id={$order.id}"><i class="icon16 logsis"></i>Заявка на доставку Logsis</a>
+    {else}
+        <a class="logsis-open-dialog" href="?plugin=logsis&action=dialog&order_id={$order.id}&resend=1"><i class="icon16 logsis"></i>Заявка на доставку Logsis</a>
+        {if !empty($logsis_status)}
+            <p class="gray">
+                {if empty($logsis_status.error)}
+                    Заявка №: <strong>{$logsis_status.order_id}</strong><br>
+                    Дата: <strong>{$logsis_status.delivery_date|wa_datetime:"humandate"}</strong><br>
+                    Статус: <strong>{$logsis_status.status_text}</strong><br>
+                    Вес: <strong>{$logsis_status.order_weight} кг</strong><br>                                
+                    Стоимость: <strong>{shop_currency($logsis_status.price_delivery)}</strong><br>
+                {else}
+                    {$logsis_status.error}
+                {/if}
+            </p>
+        {/if}
+
+    {/if}
+    <div style="display: none;" id="logsis-dialog"></div>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('.logsis-open-dialog').click(function () {
+                if ($('#logsis-dialog .dialog-content-indent').length) {
+                    $('#logsis-dialog .dialog-content-indent').html('<i class="icon16 loading"></i>');
+                } else {
+                    $('#logsis-dialog').html('<i class="icon16 loading"></i>');
+                }
+                var dialog = $('#logsis-dialog').waDialog({
+                    disableButtonsOnSubmit: false,
+                    buttons: $('<input type="submit" class="button green" value="Закрыть">').click(function () {
+                        dialog.trigger('close');
+                    }),
+                    onSubmit: function (d) {
+
+                        return false;
+                    }
+                });
+                $.ajax({
+                    type: 'GET',
+                    url: $(this).attr('href'),
+                    dataType: 'html',
+                    success: function (html) {
+                        if ($(html).find('.dialog-window').length) {
+                            $('#logsis-dialog').html(html);
+                        } else {
+                            $('#logsis-dialog .dialog-content-indent').html(html);
+                        }
+                    }
+                });
+                return false;
+            });
+        });
+    </script>
+</li>

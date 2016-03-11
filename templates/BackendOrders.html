@@ -1,0 +1,44 @@
+<div class="block">
+    <ul class="menu-v with-icons">
+        <li class="bottom-padded">
+            <a id="logsis-send-button" href="#"><i class="icon16 ss pt plane"></i>Отправка заказов в транспортную компанию LOGSIS.ru</a>
+        </li>
+    </ul>
+</div>
+
+<script type="text/javascript">
+    $(function () {
+        $('#logsis-send-button').click(function () {
+            if ($('table#order-list tr.order input[type=checkbox]:checked').length) {
+                var self = $(this);
+                var order_ids = [];
+                $('table#order-list tr.order input[type=checkbox]:checked').each(function () {
+                    order_ids.push($(this).closest('tr').data('order-id'));
+                });
+                $(this).after('<i class="icon16 loading"></i>');
+                $.ajax({
+                    url: '?plugin=logsis&action=sendOrders',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {
+                        order_ids: order_ids
+                    },
+                    success: function (data, textStatus) {
+                        self.next('i.icon16.loading').remove();
+                        if (data.status == 'ok') {
+                            alert(data.data.message);
+                        } else {
+                            alert(data.errors.join(' '));
+                        }
+                    },
+                    error: function (jqXHR, errorText) {
+                        alert(jqXHR.responseText);
+                    }
+                });
+            } else {
+                alert('Выберите заказы для отправки');
+            }
+            return false;
+        });
+    });
+</script>

@@ -1,0 +1,202 @@
+<div class="dialog-background"></div>
+<form id="logsis-form" action="?plugin=logsis&action=saveOrder">
+    <input type="hidden" name="order_id" value="{$order.id|default:0}"/>
+    {if !empty($resend)}
+        <input type="hidden" name="resend" value="1"/>
+    {/if}
+    {$wa->csrf()}
+    <div class="dialog-window">
+        <div class="dialog-content">
+            <div class="dialog-content-indent">
+                <h1>Заявка на доставку Logsis</h1>
+                <div class="fields form">
+                    <div class="field">
+                        <div class="name">Тип доставки *</div>
+                        <div class="value">
+                            <select name="logsis[type]">
+                                <option value="1"{if $order.logsis.type|default:1 == 1} selected="selected"{/if}>Доставка курьером</option>
+                                <option value="2"{if $order.logsis.type|default:1 == 2} selected="selected"{/if}>Самовывоз</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="name">Дата доставки *</div>
+                        <div class="value">
+                            <input class="required" type="text" name="logsis[delivery_date]" value="{$order.logsis.delivery_date|default:time()|date_format:"Y-m-d"|escape}"/>
+                            <p class="hint">в формате ГГГГ-ММ-ДД</p>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="name">Интервал доставки *</div>
+                        <div class="value">
+                            <input class="required short" type="text" name="logsis[delivery_time1]" value="{$order.logsis.delivery_time1|default:'10:00'|escape}"/>
+                            -
+                            <input class="required short" type="text" name="logsis[delivery_time2]" value="{$order.logsis.delivery_time2|default:'22:00'|escape}"/>
+                            <p class="hint">Минимальное начальное - 10:00, максимальное конечное - 22:00, интервал - 4 часа минимум.</p>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="name">ФИО (имя) получателя *</div>
+                        <div class="value">
+                            <input class="required" type="text" name="logsis[target_name]" value="{$order.logsis.target_name|default:$order.contact.name|escape}"/>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="name">Номер телефона получателя *</div>
+                        <div class="value">
+                            <input class="required" type="text" name="logsis[target_contacts]" value="{$order.logsis.target_contacts|default:$order.contact.phone|escape}"/>
+                            <p class="hint">Только 11 цифр: 7хххххххххх</p>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="name">Город (нас. пункт) *</div>
+                        <div class="value">
+                            <input type="hidden" id="mo_punkt_id" name="logsis[addr][mo_punkt_id]" value="{$order.logsis.addr.mo_punkt_id|default:''|escape}"/>
+                            <input class="required city-field" name="logsis[addr][city]" type="text" value="{$order.logsis.addr.city|default:$order.params['shipping_address.city']|default:''|escape}" placeholder="введите первые буквы ..."/>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="name">Улица *</div>
+                        <div class="value">
+                            <input class="required" type="text" name="logsis[addr][street]" value="{$order.logsis.addr.street|default:$order.params['shipping_address.street']|default:''|escape}"/>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="name">Дом</div>
+                        <div class="value">
+                            <input class="short" type="text" name="logsis[addr][building]" value="{$order.logsis.addr.building|default:''|escape}"/>
+                            <p class="hint">Номер дома доставки</p>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="name">Корпус</div>
+                        <div class="value">
+                            <input class="short" type="text" name="logsis[addr][corpus]" value="{$order.logsis.addr.corpus|default:''|escape}"/>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="name">Квартира</div>
+                        <div class="value">
+                            <input class="short" type="text" name="logsis[addr][office]" value="{$order.logsis.addr.office|default:''|escape}"/>
+                            <p class="hint">Номер квартиры (офиса)</p>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="name">Габариты заказа *</div>
+                        <div class="value">
+                            <input class="required short" type="text" name="logsis[dimension_side1]" value="{$order.logsis.dimension_side1|default:''|escape}" placeholder="см"/>
+                            x
+                            <input class="required short" type="text" name="logsis[dimension_side2]" value="{$order.logsis.dimension_side2|default:''|escape}" placeholder="см"/>
+                            x
+                            <input class="required short" type="text" name="logsis[dimension_side3]" value="{$order.logsis.dimension_side3|default:''|escape}" placeholder="см"/>
+                            <p class="hint">Значение сторон в см</p>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="name">Вес отправления *</div>
+                        <div class="value">
+                            <input class="required short" type="text" name="logsis[order_weight]" value="{$order.logsis.order_weight|default:''|escape}" placeholder="кг"/>
+                            <p class="hint">Вес в кг</p>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="name">Тип оплаты</div>
+                        <div class="value">
+                            <input type="radio" name="logsis[np]" value="0"{if $order.logsis.np|default:1} checked="checked"{/if}/> - без принятия наличных<br/>
+                            <input type="radio" name="logsis[np]" value="1"{if $order.logsis.np|default:1} checked="checked"{/if}/> - наложеный платеж<br/>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="name">SMS-информирование</div>
+                        <div class="value">
+                            <input type="hidden" name="logsis[sms]" value="0"/>
+                            <input type="checkbox" name="logsis[sms]" value="1"{if $order.logsis.sms|default:0} checked="checked"{/if}/>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="name">Комментарий к заказу</div>
+                        <div class="value">
+                            <textarea name="logsis[target_notes]">{$order.logsis.target_notes|default:$order.comment|escape}</textarea>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="dialog-buttons">
+            <div class="dialog-buttons-gradient">
+                <input type="checkbox" name="send" value="1"/> - отправить заявку
+                <input type="submit" value="Сохранить" class="button green">
+                <a class="cancel" href="#">Отмена</a>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script src="{$wa_app_static_url}plugins/logsis/js/jquery.validate.min.js"></script>
+<script src="{$wa_app_static_url}plugins/logsis/js/kladr/jquery.kladr.min.js"></script>
+<link href="{$wa_app_static_url}plugins/logsis/js/kladr/jquery.kladr.min.css" rel="stylesheet">
+<script type="text/javascript" src="{$wa_app_static_url}plugins/logsis/js/maskedinput.js"></script> 
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('input[name="logsis[target_contacts]"]').mask("79999999999");
+        $('input[name="logsis[delivery_date]"]').mask("9999-99-99");
+        $('input[name="logsis[delivery_time1]"]').mask("99:99");
+        $('input[name="logsis[delivery_time2]"]').mask("99:99");
+        $('input[name="logsis[delivery_date]"]').datepicker({
+            dateFormat: 'yy-mm-dd'
+        });
+
+        $('.city-field').kladr({
+            type: $.kladr.type.city,
+            select: function (obj) {
+                $('#mo_punkt_id').val(obj.id);
+            }
+        });
+
+        $("#logsis-form").validate({
+            rules: {
+                terms: {
+                    required: true
+                }
+            },
+            messages: {
+                terms: "Это поле обязательное для заполнения"
+            },
+            submitHandler: function (form) {
+                var form = $(form);
+                var loading = $('<i class="icon16 loading"></i>')
+                form.find('input[type=submit]').after(loading);
+                $.ajax({
+                    url: form.attr('action'),
+                    type: 'POST',
+                    dataType: 'json',
+                    data: form.serialize(),
+                    success: function (data, textStatus) {
+                        loading.remove();
+                        if (data.status == 'ok') {
+                            form.closest('.dialog').trigger('close');
+                        } else {
+                            alert(data.errors.join(', '));
+                        }
+                    }, error: function (jqXHR, textStatus, errorThrown) {
+                        alert(jqXHR.responseText);
+                    }
+                });
+            }
+        });
+        $('#logsis-form .required').each(function () {
+            $(this).rules('add', {
+                required: true,
+                messages: {
+                    required: "Это поле обязательное для заполнения"
+                }
+            });
+        });
+
+        $('#logsis-form .cancel').click(function () {
+            $(this).closest('.dialog').trigger('close');
+            return false;
+        });
+    });
+</script>
