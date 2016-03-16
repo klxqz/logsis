@@ -70,7 +70,9 @@
                 <div class="value">
                     <select name="shop_logsis[weight_feature]">
                         {foreach $features as $feature}
-                            <option {if $settings.weight_feature|default:'weight' == $feature.code}selected="selected"{/if} value="{$feature.code}">{$feature.name|escape} ({$feature.code})</option>
+                            {if $feature.type == 'dimension.weight'}
+                                <option {if $settings.weight_feature|default:'weight' == $feature.code}selected="selected"{/if} value="{$feature.code}">{$feature.name|escape} ({$feature.code})</option>
+                            {/if}
                         {/foreach}
                     </select>
                     <p class="hint">Характеристика для расчета веса заказа. Характеристика типа: <u>Значение:Вес (кг, г, фунт, унция)</u></p>
@@ -93,7 +95,9 @@
                 <div class="value">
                     <select name="shop_logsis[volume_feature]">
                         {foreach $features as $feature}
-                            <option {if $settings.volume_feature|default:'' == $feature.code}selected="selected"{/if} value="{$feature.code}">{$feature.name|escape} ({$feature.code})</option>
+                            {if $feature.type == '3d.dimension.length'}
+                                <option {if $settings.volume_feature|default:'' == $feature.code}selected="selected"{/if} value="{$feature.code}">{$feature.name|escape} ({$feature.code})</option>
+                            {/if}
                         {/foreach}
                     </select>
                     <p class="hint">Характеристика для расчета габаритов заказа. Характеристика типа: <u>Значение × Значение × Значение:Длина (м, см, мм, дюйм, ...)</u></p>
