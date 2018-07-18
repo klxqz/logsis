@@ -12,9 +12,9 @@ class shopLogsisPluginBackendSaveOrderController extends waJsonController {
                     $order_model->updateById($order_id, array('logsis_is_send' => 0));
                 }
                 if (waRequest::post('send')) {
-                    $response = shopLogsis::newOrder($order_id);
+                    $response = shopLogsis::createOrder($order_id);
                     if (!empty($response['order_id'])) {
-                        $order_model->updateById($order_id, array('logsis_is_send' => 1));
+                        $order_model->updateById($order_id, array('logsis_is_send' => 1, 'logsis_response' => json_encode($response)));
                     }
                 }
             } else {

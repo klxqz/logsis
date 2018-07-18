@@ -24,13 +24,12 @@ class shopLogsis {
         $app_settings_model = new waAppSettingsModel();
         $data = array(
             'key' => $app_settings_model->get(shopLogsisPlugin::$plugin_id, 'api_key'),
-            'action' => 'getstatus',
-            'order_id' => $order_id
+            'inner_n' => $order_id
         );
-        return self::request($data);
+        return self::request('getstatus', $data);
     }
 
-    public static function newOrder($order_id) {
+    public static function createOrder($order_id) {
         $app_settings_model = new waAppSettingsModel();
         $order_model = new shopOrderModel();
         $order = $order_model->getOrder($order_id);
@@ -49,8 +48,8 @@ class shopLogsis {
 
         $total = shop_currency($order['total'], $order['currency'], wa('shop')->getConfig()->getCurrency(), false);
 
-        $sdata = array(
-            'type' => $logsis['type'],
+        $data = array(
+            'key' => $app_settings_model->get(shopLogsisPlugin::$plugin_id, 'api_key'),
             'inner_n' => $order['id'],
             'delivery_date' => $logsis['delivery_date'],
             'delivery_time1' => $logsis['delivery_time1'],
@@ -58,47 +57,68 @@ class shopLogsis {
             'target_name' => $logsis['target_name'],
             'target_contacts' => $logsis['target_contacts'],
             'target_notes' => $logsis['target_notes'],
-            'addr' => Array(
-                'mo_punkt_id' => $logsis['addr']['mo_punkt_id'],
-                'street' => $logsis['addr']['street'],
-                'building' => $logsis['addr']['building'],
-                'corpus' => $logsis['addr']['corpus'],
-                'office' => $logsis['addr']['office']
-            ),
             'os' => $total,
+            'np' => $logsis['np'],
             'price_client' => $total,
             'price_client_delivery' => $order['shipping'],
+            'price_client_delivery_nds' => $logsis['price_client_delivery_nds'],
+            'order_weight' => $logsis['order_weight'],
+            'places_count' => $logsis['places_count'],
             'dimension_side1' => $logsis['dimension_side1'],
             'dimension_side2' => $logsis['dimension_side2'],
             'dimension_side3' => $logsis['dimension_side3'],
-            'order_weight' => $logsis['order_weight'],
-            'is_complect' => 0,
-            'np' => $logsis['np'],
+            'city' => $logsis['city'],
+            'mo_punkt_id' => $logsis['mo_punkt_id'],
+            'addr' => $logsis['addr'],
             'sms' => $logsis['sms'],
-            'is_packed' => 0,
+            'open_option' => $logsis['open_option'],
+            'call_option' => $logsis['call_option'],
+            'docs_option' => $logsis['docs_option'],
+            'partial_option' => $logsis['partial_option'],
+            'dress_fitting_option' => $logsis['dress_fitting_option'],
+            'lifting_option' => $logsis['lifting_option'],
+            'cargo_lift' => $logsis['cargo_lift'],
+            'floor' => $logsis['floor'],
+            'change_option' => $logsis['change_option'],
         );
+
 
         $goods = array();
         foreach ($order['items'] as $item) {
+            $weight = self::getItemWeight($item) > 0 ? self::getItemWeight($item) : 0.1;
             $goods[] = array(
+                'articul' => $item['sku_id'],
                 'artname' => $item['name'],
-                'price' => shop_currency($item['price'], $order['currency'], wa('shop')->getConfig()->getCurrency(), false),
-                'weight' => self::getItemWeight($item),
                 'count' => $item['quantity'],
+                'weight' => $weight,
+                'price' => shop_currency($item['price'], $order['currency'], wa('shop')->getConfig()->getCurrency(), false),
+                'nds' => 2,
             );
         }
-        $sdata['goods'] = $goods;
+        $data['goods'] = $goods;
 
-        $data = array(
-            'key' => $app_settings_model->get(shopLogsisPlugin::$plugin_id, 'api_key'),
-            'action' => 'neworder',
-            'order' => urlencode(json_encode($sdata))
-        );
-
-        return self::request($data);
+        return self::request('createorder', $data, 'POST');
     }
 
-    private static function request($data) {
+    public static function confirmOrder($order_id) {
+        $app_settings_model = new waAppSettingsModel();
+        $data = array(
+            'key' => $app_settings_model->get(shopLogsisPlugin::$plugin_id, 'api_key'),
+            'inner_n' => $order_id
+        );
+        return self::request('confirmorder', $data, 'POST');
+    }
+
+    public static function testKey() {
+        $app_settings_model = new waAppSettingsModel();
+        $data = array(
+            'key' => $app_settings_model->get(shopLogsisPlugin::$plugin_id, 'api_key'),
+        );
+        return self::request('testkey', $data);
+    }
+
+    private static function request($action, $data, $method = 'GET') {
+
         if (!extension_loaded('curl') || !function_exists('curl_init')) {
             throw new waException('PHP расширение cURL не доступно');
         }
@@ -111,9 +131,15 @@ class shopLogsis {
             throw new waException('Ошибка инициализации curl: ' . curl_errno($ch));
         }
 
-        @curl_setopt($ch, CURLOPT_URL, 'http://cab.logsis.ru/apiv1/index');
+        $url = 'http://cab.logsis.ru/apiv2/' . $action;
+
+        @curl_setopt($ch, CURLOPT_URL, $url);
+        @curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+                    'Content-Type: application/x-www-form-urlencoded',
+                    'Accept: text/html'
+        ));
         @curl_setopt($ch, CURLOPT_POST, true);
-        @curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        @curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
         @curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
         $response = @curl_exec($ch);
@@ -136,7 +162,7 @@ class shopLogsis {
             throw new waException($response['response']['Error']);
         }
 
-        if ($response['status'] == 200 && !empty($response['response']['order_id'])) {
+        if ($response['status'] == 200) {
             return $response['response'];
         } else {
             throw new waException('Неизвестная ошибка');

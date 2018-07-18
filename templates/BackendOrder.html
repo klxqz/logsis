@@ -26,6 +26,9 @@
     <div style="display: none;" id="logsis-dialog"></div>
     <script type="text/javascript">
         $(document).ready(function () {
+            var p = $('<div></div>').append($('#logsis-dialog'));
+            p.appendTo('body');
+            
             $('.logsis-open-dialog').click(function () {
                 if ($('#logsis-dialog .dialog-content-indent').length) {
                     $('#logsis-dialog .dialog-content-indent').html('<i class="icon16 loading"></i>');

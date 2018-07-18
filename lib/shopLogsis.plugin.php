@@ -22,6 +22,8 @@ class shopLogsisPlugin extends shopPlugin {
                 try {
                     $logsis_status = shopLogsis::getStatus($order['id']);
                     $logsis_status['status_text'] = shopLogsis::status($logsis_status['status']);
+                    //$response = shopLogsis::confirmOrder($order['id']);
+                    //print_r($response);
                 } catch (Exception $ex) {
                     $logsis_status['error'] = $ex->getMessage();
                 }

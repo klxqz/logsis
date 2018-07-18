@@ -24,6 +24,14 @@
         margin-top: 15px;
         display: block;
     }
+    .green{
+        color: green;
+        font-weight: bold;
+    }
+    .red{
+        color:red;
+        font-weight: bold;
+    }
 </style>
 <h1>Курьерская доставка LOGSIS</h1>
 
@@ -58,6 +66,9 @@
                 </div>
                 <div class="value">
                     <input class="long" type="text" name="shop_logsis[api_key]" value="{$settings.api_key|default:''|escape}" />
+                </div>
+                <div class="value">
+                    <a class="connection-test-btn" href="#"><i class="icon16 ss pt globe"></i>Выполнить проверку ключа</a>
                 </div>
             </div>
         </div>
@@ -136,6 +147,38 @@
             }
             var f = $("#plugins-settings-form");
             $.post(f.attr('action'), f.serialize());
+        });
+        $('.connection-test-btn').click(function () {
+            var loading = $('<span> <i class="icon16 loading"></i></span>');
+            $(this).after(loading);
+            var f = $("#plugins-settings-form");
+            $.post(f.attr('action'), f.serialize(), function () {
+                $.ajax({
+                    url: '?plugin=logsis&module=settings&action=testKey',
+                    type: 'POST',
+                    dataType: 'json',
+                    success: function (data, textStatus) {
+                        if (data.status == 'ok') {
+                            var yes_icon = $('<span class="green"> <i class="icon16 yes"></i> ' + data.data + '</span>');
+                            loading.replaceWith(yes_icon);
+                            setTimeout(function () {
+                                yes_icon.remove();
+                            }, 3000);
+                        } else {
+                            var no_icon = $('<span class="red"> <i class="icon16 no"></i> ' + data.errors[0][0] + '</span>');
+                            loading.replaceWith(no_icon);
+                            setTimeout(function () {
+                                no_icon.remove();
+                            }, 3000);
+                        }
+                    }, error: function (jqXHR, textStatus, errorThrown) {
+                        loading.remove();
+                        alert(jqXHR.responseText);
+                    }
+                });
+            });
+
+            return false;
         });
     });
 </script>
