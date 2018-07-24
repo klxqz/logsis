@@ -15,3 +15,10 @@ try {
 } catch (waDbException $e) {
     
 }
+
+try {
+    $model->query("SELECT `logsis_response` FROM `shop_order` WHERE 0");
+    $model->exec("ALTER TABLE `shop_order` DROP `logsis_response`");
+} catch (waDbException $e) {
+    
+}
