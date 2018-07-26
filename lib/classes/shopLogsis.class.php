@@ -3,6 +3,9 @@
 class shopLogsis {
 
     public static function status($status_id) {
+        if (waConfig::get('is_template')) {
+            return;
+        }
         $statuses = array(
             1 => 'Новая',
             2 => 'Принята',
@@ -21,6 +24,9 @@ class shopLogsis {
     }
 
     public static function getStatus($order_id) {
+        if (waConfig::get('is_template')) {
+            return;
+        }
         $app_settings_model = new waAppSettingsModel();
         $data = array(
             'key' => $app_settings_model->get(shopLogsisPlugin::$plugin_id, 'api_key'),
@@ -30,6 +36,9 @@ class shopLogsis {
     }
 
     public static function createOrder($order_id) {
+        if (waConfig::get('is_template')) {
+            return;
+        }
         $app_settings_model = new waAppSettingsModel();
         $order_model = new shopOrderModel();
         $order = $order_model->getOrder($order_id);
@@ -101,6 +110,9 @@ class shopLogsis {
     }
 
     public static function confirmOrder($order_id) {
+        if (waConfig::get('is_template')) {
+            return;
+        }
         $app_settings_model = new waAppSettingsModel();
         $data = array(
             'key' => $app_settings_model->get(shopLogsisPlugin::$plugin_id, 'api_key'),
@@ -110,6 +122,9 @@ class shopLogsis {
     }
 
     public static function testKey() {
+        if (waConfig::get('is_template')) {
+            return;
+        }
         $app_settings_model = new waAppSettingsModel();
         $data = array(
             'key' => $app_settings_model->get(shopLogsisPlugin::$plugin_id, 'api_key'),
@@ -170,6 +185,9 @@ class shopLogsis {
     }
 
     public static function getItemWeight($item) {
+        if (waConfig::get('is_template')) {
+            return;
+        }
         $app_settings_model = new waAppSettingsModel();
         $product_features_model = new shopProductFeaturesModel();
 
@@ -184,6 +202,9 @@ class shopLogsis {
     }
 
     public static function getOrderWeight($order) {
+        if (waConfig::get('is_template')) {
+            return;
+        }
         $app_settings_model = new waAppSettingsModel();
         $weight = 0;
         if (!empty($order['items'])) {
@@ -196,6 +217,9 @@ class shopLogsis {
     }
 
     public static function getOrderDimensionSide($order) {
+        if (waConfig::get('is_template')) {
+            return;
+        }
         $app_settings_model = new waAppSettingsModel();
         $product_features_model = new shopProductFeaturesModel();
         $volume_feature = $app_settings_model->get(shopLogsisPlugin::$plugin_id, 'volume_feature');
